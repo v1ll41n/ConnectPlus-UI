@@ -9,30 +9,25 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'widgets/Indicator.dart';
 
-
 class Event extends StatefulWidget {
-  Event({Key key, @required this.event, @required this.erg})
-      : super(key: key);
-
+  Event({Key key, @required this.event, @required this.erg}) : super(key: key);
 
   final String event;
   final String erg;
 
   @override
   State<StatefulWidget> createState() {
-    return new _EventState(this.event,this.erg);
+    return new _EventState(this.event, this.erg);
   }
 }
 
-class _EventState extends State<Event>
-    with TickerProviderStateMixin {
-  
+class _EventState extends State<Event> with TickerProviderStateMixin {
   var ip;
   var port;
   var eventDetails;
-  var ergEvents ;
+  var ergEvents;
   final String event;
-  final String erg; 
+  final String erg;
   bool loading = true;
 
   AnimationController controller;
@@ -40,7 +35,6 @@ class _EventState extends State<Event>
 
   _EventState(this.event, this.erg);
 
- 
   @override
   void initState() {
     super.initState();
@@ -52,20 +46,20 @@ class _EventState extends State<Event>
     animation = Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(parent: controller, curve: Curves.easeInToLinear));
     controller.forward();
-    
   }
 
   setEnv() {
     port = DotEnv().env['PORT'];
     ip = DotEnv().env['SERVER_IP'];
   }
+
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
   }
 
-Future getEvent() async {
+  Future getEvent() async {
     final prefs = await SharedPreferences.getInstance();
     var token = prefs.getString("token");
     var url = 'http://' + ip + ':' + port + '/event/getEvent/$event';
@@ -99,7 +93,7 @@ Future getEvent() async {
       });
   }
 
- Widget base64ToImage(String base64) {
+  Widget base64ToImage(String base64) {
     Uint8List bytes = base64Decode(base64);
     return Expanded(
       child: SizedBox(
@@ -112,7 +106,7 @@ Future getEvent() async {
   List<Widget> eventsByERG() {
     List<Widget> list = List<Widget>();
     for (var ergEvent in ergEvents) {
-     if (ergEvent['_id'] != eventDetails['event']['_id']) {
+      if (ergEvent['_id'] != eventDetails['event']['_id']) {
         list.add(Container(
           padding: EdgeInsets.fromLTRB(7.0, 0.0, 7.0, 0.0),
           width: 200.0,
@@ -121,7 +115,7 @@ Future getEvent() async {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-               base64ToImage(ergEvent['poster']['fileData'].toString()),
+                base64ToImage(ergEvent['poster']['fileData'].toString()),
                 ButtonBar(
                   alignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -131,7 +125,7 @@ Future getEvent() async {
                             context,
                             MaterialPageRoute(
                               builder: (context) => Event(
-                                event:ergEvent['name'],
+                                event: ergEvent['name'],
                                 erg: ergEvent['ERG'],
                               ),
                             ));
@@ -152,6 +146,7 @@ Future getEvent() async {
     }
     return list;
   }
+
   Widget _appBar() {
     return Container(
       padding: Utils.padding,
@@ -191,8 +186,7 @@ Future getEvent() async {
             color: Utils.iconColor,
             style: isOutLine ? BorderStyle.solid : BorderStyle.none),
         borderRadius: BorderRadius.all(Radius.circular(13)),
-        color:
-            isOutLine ? Colors.white : Theme.of(context).backgroundColor,
+        color: isOutLine ? Colors.white : Theme.of(context).backgroundColor,
       ),
       child: Icon(icon, color: color, size: size),
     ).ripple(() {
@@ -219,115 +213,115 @@ Future getEvent() async {
   }
 
   Widget _eventPoster() {
-     if (loading == true) {
+    if (loading == true) {
       return CircularIndicator();
     } else {
-    return AnimatedBuilder(
-      builder: (context, child) {
-        return AnimatedOpacity(
-          duration: Duration(milliseconds: 500),
-          opacity: animation.value,
-          child: child,
-        );
-      },
-      animation: animation,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: <Widget>[
-          Expanded(child:
-          Container(
-            child:base64ToImage(eventDetails['poster']['fileData'].toString()),
-          ),)
-        ],
-      ),
-    );
-  }
+      return AnimatedBuilder(
+        builder: (context, child) {
+          return AnimatedOpacity(
+            duration: Duration(milliseconds: 500),
+            opacity: animation.value,
+            child: child,
+          );
+        },
+        animation: animation,
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: <Widget>[
+            SizedBox(
+              width: 250,
+              child: Image.memory(
+                  base64Decode(eventDetails['poster']['fileData'].toString())),
+            )
+          ],
+        ),
+      );
+    }
   }
 
   Widget _detailWidget() {
     if (loading == true) {
       return CircularIndicator();
     } else {
-    return DraggableScrollableSheet(
-      maxChildSize: .8,
-      initialChildSize: .8,
-      minChildSize: .7,
-      builder: (context, scrollController) {
-        return Container(
-          padding: Utils.padding.copyWith(bottom: 0),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(40),
-                topRight: Radius.circular(40),
-              ),
-              color: Colors.white),
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                SizedBox(height: 5),
-                Container(
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 50,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Utils.iconColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
+      return DraggableScrollableSheet(
+        maxChildSize: .8,
+        initialChildSize: .8,
+        minChildSize: .7,
+        builder: (context, scrollController) {
+          return Container(
+            padding: Utils.padding.copyWith(bottom: 0),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+                color: Colors.white),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  SizedBox(height: 5),
+                  Container(
+                    alignment: Alignment.center,
+                    child: Container(
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Utils.iconColor,
+                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                    ),
                   ),
-                ),
-                SizedBox(height: 10),
-                
-                Container(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Utils.titleText(
-                          textString: eventDetails['event']['name'],
-                          fontSize: 25,
-                          textcolor: Colors.black),
-                    ],
+                  SizedBox(height: 10),
+                  Container(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Utils.titleText(
+                            textString: eventDetails['event']['name'],
+                            fontSize: 25,
+                            textcolor: Colors.black),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                _dateWidget(eventDetails['event']['startDate']),
-                SizedBox(
-                  height: 20,
-                ),
-                _description(),
-                SizedBox(
-                  height: 20,
-                ),
-                Center(child: _registerButton()),
-                 Padding(
-              padding: EdgeInsets.fromLTRB(0, 64.0, 0, 8.0),
-              child: Utils.titleText(
+                  SizedBox(
+                    height: 20,
+                  ),
+                  _dateWidget(eventDetails['event']['startDate']),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  _description(),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Center(child: _registerButton()),
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(0, 64.0, 0, 8.0),
+                      child: Utils.titleText(
                           textString: "Events by $erg",
                           fontSize: 25,
                           textcolor: Colors.black)),
-          Padding(
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: SizedBox(
-                  height: 200,
-                  child: ListView(
-                    physics: ClampingScrollPhysics(),
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    children: eventsByERG(),
-                  ))),
-              ],
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: SizedBox(
+                          height: 200,
+                          child: ListView(
+                            physics: ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            children: eventsByERG(),
+                          ))),
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    }
   }
-}
 
   Widget _dateWidget(String text) {
     return Container(
@@ -350,11 +344,9 @@ Future getEvent() async {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Utils.titleText(
-            textString: "Event Details",
-            fontSize: 14,
-            textcolor: Colors.black),
+            textString: "Event Details", fontSize: 14, textcolor: Colors.black),
         SizedBox(height: 20),
-        Text("venue :"+eventDetails['event']['venue']),
+        Text("venue :" + eventDetails['event']['venue']),
       ],
     );
   }
@@ -381,13 +373,9 @@ Future getEvent() async {
                 ],
               ),
               _detailWidget(),
-                   
             ],
-            
           ),
-          
         ),
-        
       ),
     );
   }
